@@ -1,0 +1,111 @@
+\documentclass[10pt,twocolumn,letterpaper]{article}
+
+\usepackage{cvpr}
+\usepackage{times}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% Include other packages here, before hyperref.
+
+% If you comment hyperref and then uncomment it, you should delete
+% egpaper.aux before re-running latex.  (Or just hit 'q' on the first latex
+% run, let it finish, and you should be clear).
+\usepackage[breaklinks=true,bookmarks=false]{hyperref}
+
+\cvprfinalcopy % *** Uncomment this line for the final submission
+
+\def\cvprPaperID{****} % *** Enter the CVPR Paper ID here
+\def\httilde{\mbox{\tt\raisebox{-.5ex}{\symbol{126}}}}
+
+% Pages are numbered in submission mode, and unnumbered in camera-ready
+%\ifcvprfinal\pagestyle{empty}\fi
+\setcounter{page}{1}
+\begin{document}
+
+%%%%%%%%% TITLE
+\title{Final Project Proposal - Object Recognition with Hierachical Kernel Descriptors}
+
+\author{Janarthanan Rajendran\\
+{\tt\small rjana@umich.edu}
+% For a paper whose authors are all at the same institution,
+% omit the following lines up until the closing ``}''.
+% Additional authors and addresses can be added with ``\and'',
+% just like the second author.
+% To save space, use either the email address or home page, not both
+\and
+Karthik Desingh\\
+{\tt\small kdesingh@umich.edu}
+\and
+Zheming Zhou\\
+{\tt\small zhezhou@umich.edu}
+\and
+Zhiqiang Sui\\
+{\tt\small zsui@umich.edu}
+}
+\maketitle
+%\thispagestyle{empty}
+
+%%%%%%%%% BODY TEXT
+\section{Problem and Motivation}
+Designing low-level image features is essential for descriptor-based visual recognition. The traditional patch level feature descriptors like SIFT\cite{lowe2004distinctive} and HOG\cite{dalal2005histograms} are successful in feature extraction but they suffer from computational inefficiency and is limited to gradient features. In this project, we look at kernel-based pixel-wise feature descriptors\cite{bo_nips10} which have the capacity to unify and turn pixel attributes like gradient and color into patch-level features. We also look at Kernel Principal Component Analysis(KPCA)\cite{scholkopf1998nonlinear} to compress the kernel-based features to dramatically decrease the feature computation cost.
+
+However, the single layer kernel descriptors do not scale well to large-scale problems due to the use of nonlinear SVMs. So we will also extend it to hierarchical kernel descriptors \cite{bo_cvpr11} which apply kernel descriptors recursively to form image-level features from pixel attributes. This enables leveraging linear SVMs to achieve better performance.  
+%-------------------------------------------------------------------------
+\section{Approach}
+Kernel descriptor\cite{bo_nips10} is a kernel-based method for capturing image variations. For introducing Kernel Descriptor, we will first discuss the kernel view of the traditional feature descriptor. Following that, three types of the kernel descriptors will be described as well as KPCA for feature compression.
+
+We then will look at Hierarchical kernel descriptors \cite{bo_cvpr11} which extract image features layer by layer by recursively applying kernel descriptors at different levels. 
+
+\subsection{Kernel Descriptors}
+For traditional feature descriptors like SIFT and HOG, the feature vector of each vector $z$ can be expressed as $F(z)=m(z)\delta(z)$, where $m(z)$ is the magnitude of image gradient and $\delta(z)$ is the gradient orientation indicator vector. Then, in an image patch $P$, we can get $F(P) = \sum_{z\in P}\tilde{m}(z)\delta(z)$, where $\tilde{m}(z)$ is the normalized $m(z)$. In visual recognition, L2 distance is a common metric to compute similarity of two patches($P$ and $Q$) which means we can directly use a linear kernel with feature map $F(P)$ to represent the similarity:
+$$K(P,Q) = F(P)^TF(Q) = \sum_{z\in P}\sum_{z'\in Q}\underbrace{\tilde{m}(z)\tilde{m}(z')}_{k_{\tilde{m}}(z,z')}\underbrace{\delta(z)^T\delta(z')}_{k_{\tilde{\delta}}(z,z')}$$
+Given the previous aspects of feature descriptors, we can design different kernel descriptors based on color, gradient orientation, and even shape. With those kernel descriptors explored, we can further compress the features by projecting to a low dimensional space using KPCA to realize efficient computing. 
+%This method requires extra learning in Deep learning. There are several works\cite{cite1}-\cite{cite2} related with deep learning-based graspable pose estimation. 
+
+%The main algorithm we apply is based on \cite{cite2}. A two-step cascaded detection system is introduced, which distinguishes itself from previous approaches by learning not only the weights used to rank prospective grasps, but also the features used to rank them. Then a improved feature learning algorithm and structured regularization method is raised to get better performance in graspable pose detection.
+\subsection{Hierarchical Kernel Descriptors} 
+Hierarchical kernel descriptors aggregate patch-level features which have a similar structure to those used to aggregate pixel attributes:
+$$
+K(\bar{P}, \bar{Q}) = \sum_{A \in \bar{P}} \sum_{A^{\prime} \in \bar{Q}} \tilde{W}_A \tilde{W}_{A^{\prime}} k_F (F_A, F_{A^{\prime}}) k_C (C_A, C_{A\prime})
+$$
+where $A$ and $A^{\prime}$ denote image patches, and $\bar{P}$ and $\bar{Q}$ are sets of image patches. $k_F$ and $k_C$ are kernels that capture the spatial relationship and similarity between two patches. The linear kernel $\tilde{W}_A\tilde{W}_{A^{\prime}}$ weights the contribution of each patch-level feature. 
+
+%The geometry-based algorithm is developed mainly from \cite{cite3}.
+
+%This method aims to extract handle-like features in point clouds. The idea is that we first randomly sample some points in point clouds, then a quadratic surface is introduced to fit the points and its neighbors. If the fitting score reaches certain threshold, the points and its neighbors will be accepted. After collecting the graspable points in the image, we will project those points into an orthogonal plane to find least square circle for those points. If the fitting process has certain error within a certain threshold, the circle will be accepted and a cylindrical shell matching method will be used to find the pose of the graspable features in point clouds. 
+
+%\subsection{Other essential approaches for project}
+%Since our code will be based on MATLAB, in order to construct simple data transmitting bridge between ROS file system (run in Fetch) and MATLAB, we also need to build communication channel based on tcp/ip protocol. The moving of Fetch's arm will be accomplished by calling existence packages from ROS.
+\section{Experiments and Dataset}
+We will evaluate kernel descriptors on Scene-15, Caltech-101, and CIFAR10. We will also explore the implementation of KPCA in kernel descriptor compression.
+
+We will evaluate hierarchical kernel descriptors on CIFAR10 and the Washington RGB-D Object Dataset\cite{lai_icra11a} which are publicly available. We will also provide extensive comparisons with methods like SIFT, SVM, K-means in terms of object recognition accuracy.  
+%The input data for this project will be a collection of images from grasping training data set (e.x. Cornell grasping dataset) and a set of RGB-D images for graspable point detection testing. The output will be the graspable point and principal axis of the objects in 3D. We will send the output to the Fetch robot for verification. In this way, the expected outcome for this project should be:
+%\begin{enumerate}
+%\item Be able to show graspable area on given image  (baseline) 
+%\item Be able to get the graspable point and principal axis of the objects in 3D (baseline) 
+%\item Video demonstration of Fetch grasping (This will be determined by the progress of the project) 
+%\end{enumerate}
+
+\section{Group Member Roles}
+\begin{enumerate}
+\item Janarthanan Rajendra: Implement Hierarchical Kernel Descriptors.
+\item Karthik Desingh: Descriptor compression with KPCA, Linear SVM and nonlinear SVM on datasets.
+\item Zheming Zhou: Implement color, gradient and shape kernel descriptors for feature extraction. Explore hard binning and soft binning realization of descriptors.
+\item Zhiqiang Sui: Run with combination of three kernel descriptors by projecting with kernel PCA and Laplacian kernel SVM on datasets.
+\end{enumerate}
+{\small
+\bibliographystyle{ieee}
+\bibliography{egbib}
+}
+
+ \end{document}
+% * <rjana@umich.edu> 2016-11-17T00:37:32.292Z:
+%
+% Hi..
+% I made some overall changes in text, in terms of the sentence formations and typos. Please let me know if you want me to do something else.
+% Thanks
+%
+% ^.
